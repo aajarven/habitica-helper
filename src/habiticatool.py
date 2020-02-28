@@ -56,3 +56,27 @@ class PartyTool(object):
                     sharing_challenge = challenge
 
         return sharing_challenge
+
+    def get_challenge_participants(self, challenge_id):
+        """
+        Return a list of user_id's of all challenge participants.
+        """
+        user_ids = []
+        last_id = None
+        while True:
+            url = "https://habitica.com/api/v3/challenges/{}/members".format(
+                challenge_id
+                )
+            if last_id:
+                url = "{}?lastId={}".format(url, last_id)
+            response = requests.get(url, headers=self._header)
+            data = response.json()["data"]
+
+            for user in data:
+                user_ids.append(user["id"])
+            if len(data) < 30:
+                break
+            else:
+                last_id = data[len(data) - 1]
+
+        return user_ids
