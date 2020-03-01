@@ -25,7 +25,7 @@ class PartyTool(object):
         """
         self._header = header
 
-    def get_current_sharing_weekend(self):
+    def current_sharing_weekend(self):
         """
         Return the current sharing weekend challenge.
 
@@ -57,7 +57,7 @@ class PartyTool(object):
 
         return sharing_challenge
 
-    def get_challenge_participants(self, challenge_id):
+    def challenge_participants(self, challenge_id):
         """
         Return a list of user_id's of all challenge participants.
         """
@@ -81,7 +81,7 @@ class PartyTool(object):
 
         return user_ids
 
-    def get_eligible_winners(self, challenge_id, user_ids):
+    def eligible_winners(self, challenge_id, user_ids):
         """
         Return a list of nicnames of eligible challenge winners.
 
