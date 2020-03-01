@@ -80,3 +80,28 @@ class PartyTool(object):
                 last_id = data[len(data) - 1]
 
         return user_ids
+
+    def get_eligible_winners(self, challenge_id, user_ids):
+        """
+        Return a list of nicnames of eligible challenge winners.
+
+        Here, anyone who has completed all todo type tasks is eligible: habits
+        or dailies are not inspected.
+
+        :challenge_id: ID of challenge for which eligibility is assessed.
+        :user_ids: A list of IDs for users whose eligibility is to be tested.
+        """
+        eligible_winners = []
+        for user_id in user_ids:
+            response = requests.get(
+                "https://habitica.com/api/v3/challenges/{}/members/{}"
+                "".format(challenge_id, user_id),
+                headers=self._header)
+            progress_dict = response.json()["data"]
+            eligible = True
+            for task in progress_dict["tasks"]:
+                if task["type"] == "todo" and not task["completed"]:
+                    eligible = False
+            if eligible:
+                eligible_winners.append(progress_dict["profile"]["name"])
+        return eligible_winners
