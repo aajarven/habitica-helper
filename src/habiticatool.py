@@ -41,7 +41,7 @@ class PartyTool(object):
 
         sharing_challenge = None
         for challenge in response.json()["data"]:
-            if ("Sharing Weekend Challenge" not in challenge["name"] or
+            if ("Sharing Weekend" not in challenge["name"] or
                     "TEMPLATE" in challenge["name"]):
                 continue
 
