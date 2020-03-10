@@ -28,7 +28,10 @@ def sharing_winners():
     considered eligible to win.
 
     The winner is chosen based on the opening, closing, highest and lowest
-    values of AEX index (Amsterdam Stock Exchange) from the previous monday.
+    values of AEX index (Amsterdam Stock Exchange) from this week Tuesday. In
+    order to make sure that the result is indeed deterministic, make sure that
+    the stock has already closed for the day before calling the script:
+    otherwise e.g. the closing price can still change.
     """
     tool = PartyTool(HEADER)
     challenge = tool.current_sharing_weekend()
@@ -42,7 +45,7 @@ def sharing_winners():
     click.echo("")
 
     today = datetime.date.today()
-    last_monday = today - datetime.timedelta(today.weekday())
+    last_monday = today - datetime.timedelta(today.weekday() - 1)
     click.echo("Using stock data from {}".format(last_monday))
 
     rand = StockRandomizer("^AEX", last_monday)
