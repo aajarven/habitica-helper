@@ -25,6 +25,45 @@ class PartyTool(object):
         """
         self._header = header
 
+    def newest_matching_challenge(self, must_haves, no_gos):
+        """
+        Return the newest challenge with a name that fits the given criteria.
+
+        The challenge is chosen based on its title containing all strings in
+        the given must_haves iterable and none that are in no_gos. If there are
+        multiple matching challenges, the one that has the most recent "created
+        at" time is returned.
+
+        :must_haves: iterable of strings that must be present in the name
+        :no_gos: iterable of strings that must not be present in the name
+        :returns: A dict representing the newest matching challenge
+        """
+        response = requests.get(
+            "https://habitica.com/api/v3/challenges/groups/party",
+            headers=self._header)
+
+        matching_challenge = None
+        for challenge in response.json()["data"]:
+            name = challenge["name"]
+            for substring in must_haves:
+                if substring not in name:
+                    continue
+            for substring in no_gos:
+                if substring in name:
+                    continue
+
+            if not matching_challenge:
+                matching_challenge = challenge
+            else:
+                old_created = datetime.strptime(matching_challenge["createdAt"],
+                                                self._timestamp_format)
+                new_created = datetime.strptime(challenge["createdAt"],
+                                                self._timestamp_format)
+                if new_created > old_created:
+                    matching_challenge = challenge
+
+        return matching_challenge
+
     def current_sharing_weekend(self):
         """
         Return the current sharing weekend challenge.
@@ -35,27 +74,8 @@ class PartyTool(object):
 
         :returns: A dict representing the newest Sharing Weekend Challenge
         """
-        response = requests.get(
-            "https://habitica.com/api/v3/challenges/groups/party",
-            headers=self._header)
-
-        sharing_challenge = None
-        for challenge in response.json()["data"]:
-            if ("Sharing Weekend" not in challenge["name"] or
-                    "TEMPLATE" in challenge["name"]):
-                continue
-
-            if not sharing_challenge:
-                sharing_challenge = challenge
-            else:
-                old_created = datetime.strptime(sharing_challenge["createdAt"],
-                                                self._timestamp_format)
-                new_created = datetime.strptime(challenge["createdAt"],
-                                                self._timestamp_format)
-                if new_created > old_created:
-                    sharing_challenge = challenge
-
-        return sharing_challenge
+        return self.newest_matching_challenge(
+            ["Sharing Weekend"], ["TEMPLATE", "template", "Template"])
 
     def challenge_participants(self, challenge_id):
         """
