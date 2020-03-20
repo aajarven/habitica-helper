@@ -81,25 +81,11 @@ class PartyTool(object):
         """
         Return a list of user_id's of all challenge participants.
         """
-        user_ids = []
-        last_id = None
-        while True:
-            url = "https://habitica.com/api/v3/challenges/{}/members".format(
-                challenge_id
-                )
-            if last_id:
-                url = "{}?lastId={}".format(url, last_id)
-            response = requests.get(url, headers=self._header)
-            data = response.json()["data"]
+        url = "https://habitica.com/api/v3/challenges/{}/members".format(
+            challenge_id
+            )
 
-            for user in data:
-                user_ids.append(user["id"])
-            if len(data) < 30:
-                break
-            else:
-                last_id = data[len(data) - 1]
-
-        return user_ids
+        return self._fetch_all_ids(url, 30)
 
     def eligible_winners(self, challenge_id, user_ids):
         """
@@ -125,3 +111,42 @@ class PartyTool(object):
             if eligible:
                 eligible_winners.append(progress_dict["profile"]["name"])
         return eligible_winners
+
+    def party_members(self):
+        """
+        Return a dict with data of all party members.
+
+        TODO describe the dict
+        """  # TODO
+        member_ids = self._fetch_all_ids(
+            "https://habitica.com/api/v3/groups/party/members",
+            30)
+        return member_ids  # TODO work in progress, only uid list
+
+    def _fetch_all_ids(self, url, pagelimit):
+        """
+        Return all user IDs returned by url, even are more than pagelimit.
+
+        If not all users fit into one page returned by Habitica, a new query is
+        run for the next page of users until all have been found.
+
+        :url: Habitica API url for the interesting query
+        :pagelimit: Maximum number of returned items per request.
+        """
+        user_ids = []
+        last_id = None
+        current_url = url
+        while True:
+            if last_id:
+                current_url = "{}?lastId={}".format(url, last_id)
+            response = requests.get(current_url, headers=self._header)
+            data = response.json()["data"]
+
+            for user in data:
+                user_ids.append(user["id"])
+            if len(data) < pagelimit:
+                break
+            else:
+                last_id = data[len(data) - 1]
+
+        return user_ids

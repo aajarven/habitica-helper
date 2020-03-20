@@ -52,5 +52,13 @@ def sharing_winners():
     winner_index = rand.pick_integer(0, len(completers))
     click.echo("{} wins the challenge!".format(completers[winner_index]))
 
+@cli.command()
+def party_members():
+    """
+    Show current party members.
+    """
+    tool = PartyTool(HEADER)
+    print(tool.party_members())
+
 if __name__ == "__main__":
     cli()
