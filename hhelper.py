@@ -65,5 +65,20 @@ def party_members():
             member
             ))
 
+@cli.command()
+def party_birthdays():
+    """
+    Fetch Habitica birthdays of party members.
+    """
+    tool = PartyTool(HEADER)
+    members = tool.party_members()
+    for member in members:
+        bday = members[member]["habitica_birthday"]
+        print(u"{:<20} {}.{}.{}".format(
+            member,
+            bday.day,
+            bday.month,
+            bday.year))
+
 if __name__ == "__main__":
     cli()
