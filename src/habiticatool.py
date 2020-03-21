@@ -38,6 +38,33 @@ class PartyTool(object):
         response.raise_for_status()
         return response.json()["data"]
 
+    def _fetch_all_ids(self, url, pagelimit):
+        """
+        Return all user IDs returned by url, even from multiple pages.
+
+        If not all users fit into one page returned by Habitica, a new query is
+        run for the next page of users until all have been found.
+
+        :url: Habitica API url for the interesting query
+        :pagelimit: Maximum number of returned items per request.
+        """
+        user_ids = []
+        last_id = None
+        current_url = url
+        while True:
+            if last_id:
+                current_url = "{}?lastId={}".format(url, last_id)
+            data = self._get_dict_from_api(current_url)
+
+            for user in data:
+                user_ids.append(user["id"])
+            if len(data) < pagelimit:
+                break
+            else:
+                last_id = data[len(data) - 1]
+
+        return user_ids
+
     def newest_matching_challenge(self, must_haves, no_gos):
         """
         Return the newest challenge with a name that fits the given criteria.
@@ -51,12 +78,11 @@ class PartyTool(object):
         :no_gos: iterable of strings that must not be present in the name
         :returns: A dict representing the newest matching challenge
         """
-        response = requests.get(
-            "https://habitica.com/api/v3/challenges/groups/party",
-            headers=self._header)
+        challenges = self._get_dict_from_api(
+            "https://habitica.com/api/v3/challenges/groups/party")
 
         matching_challenge = None
-        for challenge in response.json()["data"]:
+        for challenge in challenges:
             name = challenge["name"]
             for substring in must_haves:
                 if substring not in name:
@@ -112,11 +138,9 @@ class PartyTool(object):
         """
         eligible_winners = []
         for user_id in user_ids:
-            response = requests.get(
+            progress_dict = self._get_dict_from_api(
                 "https://habitica.com/api/v3/challenges/{}/members/{}"
-                "".format(challenge_id, user_id),
-                headers=self._header)
-            progress_dict = response.json()["data"]
+                "".format(challenge_id, user_id))
             eligible = True
             for task in progress_dict["tasks"]:
                 if task["type"] == "todo" and not task["completed"]:
@@ -155,31 +179,3 @@ class PartyTool(object):
                 }
 
         return members
-
-    def _fetch_all_ids(self, url, pagelimit):
-        """
-        Return all user IDs returned by url, even are more than pagelimit.
-
-        If not all users fit into one page returned by Habitica, a new query is
-        run for the next page of users until all have been found.
-
-        :url: Habitica API url for the interesting query
-        :pagelimit: Maximum number of returned items per request.
-        """
-        user_ids = []
-        last_id = None
-        current_url = url
-        while True:
-            if last_id:
-                current_url = "{}?lastId={}".format(url, last_id)
-            response = requests.get(current_url, headers=self._header)
-            data = response.json()["data"]
-
-            for user in data:
-                user_ids.append(user["id"])
-            if len(data) < pagelimit:
-                break
-            else:
-                last_id = data[len(data) - 1]
-
-        return user_ids
