@@ -25,6 +25,19 @@ class PartyTool(object):
         """
         self._header = header
 
+    def _get_dict_from_api(self, url):
+        """
+        Get data dict for API call represented by the given url.
+
+        :url: URL for API get request
+        :returns: Dict containing the data
+
+        :raises: HTTPError if the request was bad
+        """
+        response = requests.get(url, headers=self._header)
+        response.raise_for_status()
+        return response.json()["data"]
+
     def newest_matching_challenge(self, must_haves, no_gos):
         """
         Return the newest challenge with a name that fits the given criteria.
@@ -116,12 +129,32 @@ class PartyTool(object):
         """
         Return a dict with data of all party members.
 
-        TODO describe the dict
-        """  # TODO
+        The dict uses the username as a key, the value of which is a dict
+        containing "id", "displayname" and "habitica_birthday" as keys. The
+        values of the two first are strings corresponding to user ID and
+        display name of the user, and the last is the character creation
+        timestamp as a datetime object.
+
+        :returns: Dict with member data
+        """
         member_ids = self._fetch_all_ids(
             "https://habitica.com/api/v3/groups/party/members",
             30)
-        return member_ids  # TODO work in progress, only uid list
+        members = {}
+        for member_id in member_ids:
+            profile_url = ("https://habitica.com/api/v3/members/{}"
+                           "".format(member_id))
+            profile = self._get_dict_from_api(profile_url)
+            bday = datetime.strptime(profile["auth"]["timestamps"]["created"],
+                                     self._timestamp_format)
+            login_name = profile["auth"]["local"]["username"]
+            members[login_name] = {
+                "id": member_id,
+                "displayname": profile["profile"]["name"],
+                "habitica_birthday": bday,
+                }
+
+        return members
 
     def _fetch_all_ids(self, url, pagelimit):
         """

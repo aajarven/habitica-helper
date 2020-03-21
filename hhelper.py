@@ -58,7 +58,12 @@ def party_members():
     Show current party members.
     """
     tool = PartyTool(HEADER)
-    print(tool.party_members())
+    members = tool.party_members()
+    for member in members:
+        print(u"{:<20}(@{})".format(
+            members[member]["displayname"].replace("\n", " "),
+            member
+            ))
 
 if __name__ == "__main__":
     cli()
