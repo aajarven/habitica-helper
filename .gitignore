@@ -2,4 +2,5 @@
 .venv
 *.swp
 *.pyc
-conf/secrets.py
+conf/secrets/*
+!conf/secrets/__init__.py
