@@ -13,15 +13,16 @@ class GoogleCalendar():
     """
     TODO
     """  # TODO
-    credential_path = "secrets/googletoken.pickle"
-    client_secret_path = "secrets/googlecredentials.json"
-    date_format = "%Y-%m-%d"
+    credential_path = "conf/secrets/googletoken.pickle"
+    client_secret_path = "conf/secrets/googlecredentials.json"
     credentials = None
 
-    def __init__(self):
+    def __init__(self, calendar_id):
         """
         Ensure that we have credentials for accessing the calendar.
         """
+        self.calendar_id = calendar_id
+
         if os.path.exists(self.credential_path):
             with open(self.credential_path, "rb") as token:
                 self.credentials = pickle.load(token)
@@ -40,31 +41,58 @@ class GoogleCalendar():
                 pickle.dump(self.credentials, token)
         self.service = build('calendar', 'v3', credentials=self.credentials)
 
-    def insert_event(self, calendar_id, summary, description, date):
+    def _date_timestamp(self, date):
+        """
+        Return the string representation of a date, usable by Google calendar.
+        """
+        return date.strftime("%Y-%m-%d")
+
+    def _datetime_timestamp(self, date):
+        """
+        Return RFC3339 representation of the midnight starting the date.
+        """
+        return "{}-{}-{}T00:00:00Z".format(date.year, date.month, date.day)
+
+
+    def insert_fullday_event(self, summary, description, date):
         """
         Insert a new event to the calendar.
 
-        TODO write a new birthday addition method
-        TODO how we determine if an event already exists? login name?
-        TODO how we determine what to write in? Don't give summary and
-             description but an user dict instead?
-        PLAN write general google calendar things here, make some other class
-             for doing the thinking
-
-        :calendar_id: Unique identifier of the calendar
         :summary: Title of the event
         :description: Possibly longer description of the event
         :date: Date for which the event is inserted.
-        """  # TODO
+        """
         new_event = {
             "summary": summary,
             "description": description,
             "start": {
-                "date": date.strftime(self.date_format),
+                "date": self._date_timestamp(date),
                 },
             "end": {
-                "date": date.strftime(self.date_format),
+                "date": self._date_timestamp(date),
                 },
             }
-        self.service.events().insert(calendarId=calendar_id,
+        self.service.events().insert(calendarId=self.calendar_id,
                                      body=new_event).execute()
+
+    def events_for_date(self, date):
+        """
+        Return a list of all events on a specific date.
+
+        :date: Date for which the events are listed
+        :returns: A list of event resources
+        """
+        next_page = None
+        events = []
+        while True:
+            new_events = self.service.events().list(
+                calendarId=self.calendar_id,
+                pageToken=next_page,
+                timeMin=self._datetime_timestamp(date),
+                timeMax=self._datetime_timestamp(date + datetime.timedelta(days=1)),
+                ).execute()
+            events = events + new_events['items']
+
+            next_page = new_events.get('nextPageToken')
+            if not next_page:
+                return events

@@ -6,6 +6,7 @@ from __future__ import print_function
 import datetime
 import click
 
+from conf import calendars
 from conf.header import HEADER
 from src.habiticatool import PartyTool
 from src.stockrandomizer import StockRandomizer
@@ -68,8 +69,10 @@ def party_members():
 @cli.command()
 def party_birthdays():
     """
-    Fetch Habitica birthdays of party members.
-    """
+    Update party birthdays in the birthday calendar.
+
+    TODO conf info
+    """  # TODO
     tool = PartyTool(HEADER)
     members = tool.party_members()
     for member in members:
@@ -79,6 +82,7 @@ def party_birthdays():
             bday.day,
             bday.month,
             bday.year))
+    tool.add_birthdays(calendars.BIRTHDAYS)
 
 if __name__ == "__main__":
     cli()

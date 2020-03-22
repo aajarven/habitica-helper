@@ -5,9 +5,12 @@ The API calls follow the guidance in the Wiki page:
 https://habitica.fandom.com/wiki/Guidance_for_Comrades#Rules_for_API_Calls
 """
 
-from datetime import datetime
+from __future__ import print_function
+
+from datetime import date, datetime
 import requests
 
+from src.google_calendar import GoogleCalendar
 
 class PartyTool(object):
     """
@@ -179,3 +182,57 @@ class PartyTool(object):
                 }
 
         return members
+
+    def add_birthdays(self, calendar_id):
+        """
+        Add Habitica birthdays of all party members to a Google calendar.
+        """
+
+        def _next_birthday(creationdate):
+            """
+            Return the date of the next birthday.
+
+            :creationdate: datetime of character creation
+            """
+            today = date.today()
+            this_year = today.year
+            birthday_candidate = date(this_year, creationdate.month,
+                                      creationdate.day)
+
+            if birthday_candidate < today:
+                return date(this_year + 1, creationdate.month,
+                            creationdate.day)
+            return birthday_candidate
+
+        def _birthday_found(events, member):
+            """
+            Check whether the birthday of a member already has an event.
+
+            :events: a list of events to be searched
+            :member: the login name of membe for whom the events are checked
+            :returns: True if birthday is present, otherwise False
+            """
+            for event in events:
+                if member in event["summary"]:
+                    return True
+            return False
+
+        calendar = GoogleCalendar(calendar_id)
+        members = self.party_members()
+        for member in members:
+            creation = members[member]["habitica_birthday"]
+            next_bday = _next_birthday(creation)
+            bday_events = calendar.events_for_date(next_bday)
+            if not _birthday_found(bday_events, member):
+                title = "Habitica birthday of @{}".format(member)
+                year_count = (next_bday.year -
+                              members[member]["habitica_birthday"].year)
+                description = (u"Celebrating the {} years {} has been a Habitician!"
+                               u"".format(year_count,
+                                          members[member]["displayname"]))
+                calendar.insert_fullday_event(title, description, next_bday)
+                print("Added birthday for @{}".format(member))
+            else:
+                print("Birthday event for @{} already present on {}.{}.{}"
+                      "".format(member, next_bday.day, next_bday.month,
+                                next_bday.year))
