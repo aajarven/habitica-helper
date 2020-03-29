@@ -96,3 +96,12 @@ class GoogleCalendar():
             next_page = new_events.get('nextPageToken')
             if not next_page:
                 return events
+
+    def update_event(self, event):
+        """
+        Updates an event with event ID matching to the given one.
+        """
+        self.service.events().update(
+            calendarId=self.calendar_id,
+            eventId=event["id"],
+            body=event).execute()

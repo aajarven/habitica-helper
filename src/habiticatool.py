@@ -178,6 +178,7 @@ class PartyTool(object):
             members[login_name] = {
                 "id": member_id,
                 "displayname": profile["profile"]["name"],
+                "username": login_name,
                 "habitica_birthday": bday,
                 }
 
@@ -204,35 +205,71 @@ class PartyTool(object):
                             creationdate.day)
             return birthday_candidate
 
-        def _birthday_found(events, member):
+        def _birthday_event(events, member):
             """
             Check whether the birthday of a member already has an event.
 
             :events: a list of events to be searched
             :member: the login name of membe for whom the events are checked
-            :returns: True if birthday is present, otherwise False
+            :returns: birthday event if found, otherwise None
             """
             for event in events:
-                if member in event["summary"]:
-                    return True
-            return False
+                if member["username"] in event["description"]:
+                    return event
+            return None
+
+        def _description(member, year_count):
+            """
+            Return description for birthday event.
+            """
+            return (u"Celebrating the {} years {} (@{}) has been a Habitician!"
+                    u"".format(year_count,
+                               member["displayname"],
+                               member["username"]))
+        def _title(member):
+            """
+            Return title for birthday event.
+            """
+            return u"Habitica birthday of {}".format(member["displayname"])
+
+        def _update_event_dict(birthday_event, member, year_count):
+            """
+            Update the contents of the birthday event dict.
+
+            In practice the only thing that changes is the display name of the
+            user. Updates are not pushed to the calendar, but the event dict is
+            altered in place.
+
+            :birthday_event: Google calendar event dict to be updated
+            :member: Member for whose birthday the event is.
+            :year_count: Number of years the habitician celebrates.
+            :returns: True if changes were made, otherwise False.
+            """
+            changed = False
+            if birthday_event["summary"] != _title(member):
+                birthday_event["summary"] = _title(member)
+                changed = True
+            if birthday_event["description"] != _description(member,
+                                                             year_count):
+                birthday_event["description"] = _description(member,
+                                                             year_count)
+                changed = True
+            return changed
 
         calendar = GoogleCalendar(calendar_id)
         members = self.party_members()
-        for member in members:
-            creation = members[member]["habitica_birthday"]
+        for member in members.values():
+            creation = member["habitica_birthday"]
             next_bday = _next_birthday(creation)
             bday_events = calendar.events_for_date(next_bday)
-            if not _birthday_found(bday_events, member):
-                title = "Habitica birthday of @{}".format(member)
-                year_count = (next_bday.year -
-                              members[member]["habitica_birthday"].year)
-                description = (u"Celebrating the {} years {} has been a Habitician!"
-                               u"".format(year_count,
-                                          members[member]["displayname"]))
-                calendar.insert_fullday_event(title, description, next_bday)
-                print("Added birthday for @{}".format(member))
+            matching_event = _birthday_event(bday_events, member)
+            year_count = next_bday.year - member["habitica_birthday"].year
+            if not matching_event:
+                calendar.insert_fullday_event(_title(member),
+                                              _description(member, year_count),
+                                              next_bday)
             else:
-                print("Birthday event for @{} already present on {}.{}.{}"
-                      "".format(member, next_bday.day, next_bday.month,
-                                next_bday.year))
+                needs_update = _update_event_dict(matching_event, member,
+                                                  year_count)
+                if needs_update:
+                    calendar.update_event(matching_event)
