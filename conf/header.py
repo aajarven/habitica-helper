@@ -1,7 +1,7 @@
 """
 The static header info Habitica requires.
 """
-from conf.secrets import PLAYER_USER_ID, PLAYER_API_TOKEN
+from conf.secrets.habitica_credentials import PLAYER_USER_ID, PLAYER_API_TOKEN
 
 HEADER = {
     "x-client":

@@ -6,6 +6,7 @@ from __future__ import print_function
 import datetime
 import click
 
+from conf import calendars
 from conf.header import HEADER
 from src.habiticatool import PartyTool
 from src.stockrandomizer import StockRandomizer
@@ -51,6 +52,40 @@ def sharing_winners():
     rand = StockRandomizer("^AEX", last_monday)
     winner_index = rand.pick_integer(0, len(completers))
     click.echo("{} wins the challenge!".format(completers[winner_index]))
+
+@cli.command()
+def party_members():
+    """
+    Show current party members.
+    """
+    tool = PartyTool(HEADER)
+    members = tool.party_members()
+    for member in members:
+        print(u"{:<20}(@{})".format(
+            members[member]["displayname"].replace("\n", " "),
+            member
+            ))
+
+@cli.command()
+def party_birthdays():
+    """
+    Update party birthdays in the birthday calendar and print them.
+
+    The birthdays are stored in the Google calendar whose ID is specified as
+    BIRTHDAYS in conf/calendars.py.
+    """
+    tool = PartyTool(HEADER)
+    members = tool.party_members()
+    for member in members:
+        bday = members[member]["habitica_birthday"]
+        result = tool.ensure_birthday(calendars.BIRTHDAYS, members[member])
+        output = u"{:<20} {}.{}.{}\t{}".format(
+            member,
+            bday.day,
+            bday.month,
+            bday.year,
+            result[1])
+        click.echo(output)
 
 if __name__ == "__main__":
     cli()
