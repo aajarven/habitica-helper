@@ -69,20 +69,23 @@ def party_members():
 @cli.command()
 def party_birthdays():
     """
-    Update party birthdays in the birthday calendar.
+    Update party birthdays in the birthday calendar and print them.
 
-    TODO conf info
-    """  # TODO
+    The birthdays are stored in the Google calendar whose ID is specified as
+    BIRTHDAYS in conf/calendars.py.
+    """
     tool = PartyTool(HEADER)
     members = tool.party_members()
     for member in members:
         bday = members[member]["habitica_birthday"]
-        print(u"{:<20} {}.{}.{}".format(
+        result = tool.ensure_birthday(calendars.BIRTHDAYS, members[member])
+        output = u"{:<20} {}.{}.{}\t{}".format(
             member,
             bday.day,
             bday.month,
-            bday.year))
-    tool.add_birthdays(calendars.BIRTHDAYS)
+            bday.year,
+            result[1])
+        click.echo(output)
 
 if __name__ == "__main__":
     cli()

@@ -184,10 +184,25 @@ class PartyTool(object):
 
         return members
 
-    def add_birthdays(self, calendar_id):
+    def ensure_birthday(self, calendar_id, member):
         """
-        Add Habitica birthdays of all party members to a Google calendar.
+        Ensure that there is an up-to-date birthday event for the member.
+
+        If there is no event for the given user on their Habitica birthday in
+        the Google calendar, a new event is created. If an event is already
+        present but its title or description are not up to date, it is edited.
+
+        The result is reported with a status code, possible values for which
+        are:
+            0: new event added
+            1: birthday already present and up to date
+            2: birthday already present but needed updating
+
+        :calendar_id: ID of the Google calendar to be used
+        :member: Member data dict of a Habitician
+        :returns: A tuple of (status_code, message)
         """
+        # pylint: disable=no-self-use
 
         def _next_birthday(creationdate):
             """
@@ -257,19 +272,24 @@ class PartyTool(object):
             return changed
 
         calendar = GoogleCalendar(calendar_id)
-        members = self.party_members()
-        for member in members.values():
-            creation = member["habitica_birthday"]
-            next_bday = _next_birthday(creation)
-            bday_events = calendar.events_for_date(next_bday)
-            matching_event = _birthday_event(bday_events, member)
-            year_count = next_bday.year - member["habitica_birthday"].year
-            if not matching_event:
-                calendar.insert_fullday_event(_title(member),
-                                              _description(member, year_count),
-                                              next_bday)
-            else:
-                needs_update = _update_event_dict(matching_event, member,
-                                                  year_count)
-                if needs_update:
-                    calendar.update_event(matching_event)
+        creation = member["habitica_birthday"]
+        next_bday = _next_birthday(creation)
+        bday_events = calendar.events_for_date(next_bday)
+        year_count = next_bday.year - member["habitica_birthday"].year
+
+        matching_event = _birthday_event(bday_events, member)
+        if not matching_event:
+            calendar.insert_fullday_event(_title(member),
+                                          _description(member, year_count),
+                                          next_bday)
+            return (0, u"New birthday event added for {}"
+                       u"".format(member["displayname"]))
+        else:
+            needs_update = _update_event_dict(matching_event, member,
+                                              year_count)
+            if needs_update:
+                calendar.update_event(matching_event)
+                return (1, u"Birthday event for {} updated"
+                           u"".format(member["displayname"]))
+            return (2, u"Birthday event for {} already up to date"
+                       u"".format(member["displayname"]))
