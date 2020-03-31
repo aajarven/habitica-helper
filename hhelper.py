@@ -37,19 +37,19 @@ def sharing_winners():
     tool = PartyTool(HEADER)
     challenge = tool.current_sharing_weekend()
     participants = tool.challenge_participants(challenge["id"])
-    completers = tool.eligible_winners(challenge["id"], participants)
+    completers = sorted(tool.eligible_winners(challenge["id"], participants))
 
     click.echo("Eligible winners for challenge \"{}\" are:"
                "".format(challenge["name"].encode("utf-8")))
-    for nick in completers:
-        click.echo(nick)
+    for member in completers:
+        click.echo(member.displayname)
     click.echo("")
 
     today = datetime.date.today()
-    last_monday = today - datetime.timedelta(today.weekday() - 1)
-    click.echo("Using stock data from {}".format(last_monday))
+    last_tuesday = today - datetime.timedelta(today.weekday() - 1)
+    click.echo("Using stock data from {}".format(last_tuesday))
 
-    rand = StockRandomizer("^AEX", last_monday)
+    rand = StockRandomizer("^AEX", last_tuesday)
     winner_index = rand.pick_integer(0, len(completers))
     click.echo("{} wins the challenge!".format(completers[winner_index]))
 
@@ -62,8 +62,8 @@ def party_members():
     members = tool.party_members()
     for member in members:
         print(u"{:<20}(@{})".format(
-            members[member]["displayname"].replace("\n", " "),
-            member
+            member.displayname.replace("\n", " "),
+            member.login_name
             ))
 
 @cli.command()
@@ -77,10 +77,10 @@ def party_birthdays():
     tool = PartyTool(HEADER)
     members = tool.party_members()
     for member in members:
-        bday = members[member]["habitica_birthday"]
-        result = tool.ensure_birthday(calendars.BIRTHDAYS, members[member])
+        bday = member.habitica_birthday
+        result = tool.ensure_birthday(calendars.BIRTHDAYS, member)
         output = u"{:<20} {}.{}.{}\t{}".format(
-            member,
+            member.login_name,
             bday.day,
             bday.month,
             bday.year,

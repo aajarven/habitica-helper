@@ -8,9 +8,10 @@ https://habitica.fandom.com/wiki/Guidance_for_Comrades#Rules_for_API_Calls
 from __future__ import print_function
 
 from datetime import date, datetime
-import requests
 
 from src.google_calendar import GoogleCalendar
+from src.member import Member
+from src import utils
 
 class PartyTool(object):
     """
@@ -28,19 +29,6 @@ class PartyTool(object):
         """
         self._header = header
 
-    def _get_dict_from_api(self, url):
-        """
-        Get data dict for API call represented by the given url.
-
-        :url: URL for API get request
-        :returns: Dict containing the data
-
-        :raises: HTTPError if the request was bad
-        """
-        response = requests.get(url, headers=self._header)
-        response.raise_for_status()
-        return response.json()["data"]
-
     def _fetch_all_ids(self, url, pagelimit):
         """
         Return all user IDs returned by url, even from multiple pages.
@@ -57,7 +45,7 @@ class PartyTool(object):
         while True:
             if last_id:
                 current_url = "{}?lastId={}".format(url, last_id)
-            data = self._get_dict_from_api(current_url)
+            data = utils.get_dict_from_api(self._header, current_url)
 
             for user in data:
                 user_ids.append(user["id"])
@@ -81,7 +69,8 @@ class PartyTool(object):
         :no_gos: iterable of strings that must not be present in the name
         :returns: A dict representing the newest matching challenge
         """
-        challenges = self._get_dict_from_api(
+        challenges = utils.get_dict_from_api(
+            self._header,
             "https://habitica.com/api/v3/challenges/groups/party")
 
         matching_challenge = None
@@ -131,17 +120,19 @@ class PartyTool(object):
 
     def eligible_winners(self, challenge_id, user_ids):
         """
-        Return a list of nicnames of eligible challenge winners.
+        Return a list of eligible challenge winners.
 
         Here, anyone who has completed all todo type tasks is eligible: habits
         or dailies are not inspected.
 
         :challenge_id: ID of challenge for which eligibility is assessed.
         :user_ids: A list of IDs for users whose eligibility is to be tested.
+        :returns: A Member object.
         """
         eligible_winners = []
         for user_id in user_ids:
-            progress_dict = self._get_dict_from_api(
+            progress_dict = utils.get_dict_from_api(
+                self._header,
                 "https://habitica.com/api/v3/challenges/{}/members/{}"
                 "".format(challenge_id, user_id))
             eligible = True
@@ -149,40 +140,19 @@ class PartyTool(object):
                 if task["type"] == "todo" and not task["completed"]:
                     eligible = False
             if eligible:
-                eligible_winners.append(progress_dict["profile"]["name"])
+                eligible_winners.append(Member(self._header, user_id))
         return eligible_winners
 
     def party_members(self):
         """
-        Return a dict with data of all party members.
+        Return a list of all party members.
 
-        The dict uses the username as a key, the value of which is a dict
-        containing "id", "displayname" and "habitica_birthday" as keys. The
-        values of the two first are strings corresponding to user ID and
-        display name of the user, and the last is the character creation
-        timestamp as a datetime object.
-
-        :returns: Dict with member data
+        :returns: A list of Member objects.
         """
         member_ids = self._fetch_all_ids(
             "https://habitica.com/api/v3/groups/party/members",
             30)
-        members = {}
-        for member_id in member_ids:
-            profile_url = ("https://habitica.com/api/v3/members/{}"
-                           "".format(member_id))
-            profile = self._get_dict_from_api(profile_url)
-            bday = datetime.strptime(profile["auth"]["timestamps"]["created"],
-                                     self._timestamp_format)
-            login_name = profile["auth"]["local"]["username"]
-            members[login_name] = {
-                "id": member_id,
-                "displayname": profile["profile"]["name"],
-                "username": login_name,
-                "habitica_birthday": bday,
-                }
-
-        return members
+        return [Member(self._header, member_id) for member_id in member_ids]
 
     def ensure_birthday(self, calendar_id, member):
         """
@@ -199,7 +169,7 @@ class PartyTool(object):
             2: birthday already present but needed updating
 
         :calendar_id: ID of the Google calendar to be used
-        :member: Member data dict of a Habitician
+        :member: Member object representing a Habitician
         :returns: A tuple of (status_code, message)
         """
         # pylint: disable=no-self-use
@@ -229,7 +199,7 @@ class PartyTool(object):
             :returns: birthday event if found, otherwise None
             """
             for event in events:
-                if member["username"] in event["description"]:
+                if member.login_name in event["description"]:
                     return event
             return None
 
@@ -239,13 +209,13 @@ class PartyTool(object):
             """
             return (u"Celebrating the {} years {} (@{}) has been a Habitician!"
                     u"".format(year_count,
-                               member["displayname"],
-                               member["username"]))
+                               member.displayname,
+                               member.login_name))
         def _title(member):
             """
             Return title for birthday event.
             """
-            return u"Habitica birthday of {}".format(member["displayname"])
+            return u"Habitica birthday of {}".format(member.displayname)
 
         def _update_event_dict(birthday_event, member, year_count):
             """
@@ -272,10 +242,10 @@ class PartyTool(object):
             return changed
 
         calendar = GoogleCalendar(calendar_id)
-        creation = member["habitica_birthday"]
+        creation = member.habitica_birthday
         next_bday = _next_birthday(creation)
         bday_events = calendar.events_for_date(next_bday)
-        year_count = next_bday.year - member["habitica_birthday"].year
+        year_count = next_bday.year - member.habitica_birthday.year
 
         matching_event = _birthday_event(bday_events, member)
         if not matching_event:
@@ -283,13 +253,13 @@ class PartyTool(object):
                                           _description(member, year_count),
                                           next_bday)
             return (0, u"New birthday event added for {}"
-                       u"".format(member["displayname"]))
+                       u"".format(member.displayname))
         else:
             needs_update = _update_event_dict(matching_event, member,
                                               year_count)
             if needs_update:
                 calendar.update_event(matching_event)
                 return (1, u"Birthday event for {} updated"
-                           u"".format(member["displayname"]))
+                           u"".format(member.displayname))
             return (2, u"Birthday event for {} already up to date"
-                       u"".format(member["displayname"]))
+                       u"".format(member.displayname))
