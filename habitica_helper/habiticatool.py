@@ -76,22 +76,24 @@ class PartyTool(object):
         matching_challenge = None
         for challenge in challenges:
             name = challenge["name"]
+            name_ok = True
             for substring in must_haves:
                 if substring not in name:
-                    continue
+                    name_ok = False
             for substring in no_gos:
                 if substring in name:
-                    continue
+                    name_ok = False
 
-            if not matching_challenge:
-                matching_challenge = challenge
-            else:
-                old_created = datetime.strptime(matching_challenge["createdAt"],
-                                                self._timestamp_format)
-                new_created = datetime.strptime(challenge["createdAt"],
-                                                self._timestamp_format)
-                if new_created > old_created:
+            if name_ok:
+                if not matching_challenge:
                     matching_challenge = challenge
+                else:
+                    old_created = datetime.strptime(matching_challenge["createdAt"],
+                                                    self._timestamp_format)
+                    new_created = datetime.strptime(challenge["createdAt"],
+                                                    self._timestamp_format)
+                    if new_created > old_created:
+                        matching_challenge = challenge
 
         return matching_challenge
 
