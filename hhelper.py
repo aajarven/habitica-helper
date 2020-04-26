@@ -8,8 +8,8 @@ import click
 
 from conf import calendars
 from conf.header import HEADER
-from src.habiticatool import PartyTool
-from src.stockrandomizer import StockRandomizer
+from habitica_helper.habiticatool import PartyTool
+from habitica_helper.stockrandomizer import StockRandomizer
 
 @click.group()
 def cli():

@@ -55,5 +55,5 @@ class StockRandomizer(object):
         for index, key in enumerate(keys):
             decimals, _ = modf(data.iloc[0][key])
             seed = seed*100 + int(round(decimals*100))
-        print "Using seed {}".format(seed)
+        print("Using seed {}".format(seed))
         return seed
