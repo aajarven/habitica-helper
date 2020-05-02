@@ -9,9 +9,9 @@ from __future__ import print_function
 
 from datetime import date, datetime
 
-from src.google_calendar import GoogleCalendar
-from src.member import Member
-from src import utils
+from habitica_helper.google_calendar import GoogleCalendar
+from habitica_helper.member import Member
+from habitica_helper import utils
 
 class PartyTool(object):
     """

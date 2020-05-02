@@ -4,7 +4,7 @@ A class for representing Habitica user data.
 
 from datetime import datetime
 
-from src import utils
+from habitica_helper import utils
 
 class Member(object):
     """
