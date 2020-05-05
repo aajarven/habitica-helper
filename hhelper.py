@@ -40,7 +40,7 @@ def sharing_winners():
     completers = sorted(tool.eligible_winners(challenge["id"], participants))
 
     click.echo("Eligible winners for challenge \"{}\" are:"
-               "".format(challenge["name"].encode("utf-8")))
+               "".format(challenge["name"]))
     for member in completers:
         click.echo(member.displayname)
     click.echo("")
