@@ -23,7 +23,8 @@ class StockRandomizer(object):
         :ticker: The stock symbol used by Yahoo! finance
         :date: Datetime of the day to be used
         """
-        random.seed(self._stock_seed(ticker, date))
+        self.seed = self._stock_seed(ticker, date)
+        random.seed(self.seed)
 
     def pick_integer(self, min_, max_):
         """
@@ -55,5 +56,4 @@ class StockRandomizer(object):
         for index, key in enumerate(keys):
             decimals, _ = modf(data.iloc[0][key])
             seed = seed*100 + int(round(decimals*100))
-        print("Using seed {}".format(seed))
         return seed

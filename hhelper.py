@@ -8,6 +8,7 @@ import click
 
 from conf import calendars
 from conf.header import HEADER
+from habitica_helper.challenge import Challenge
 from habitica_helper.habiticatool import PartyTool
 from habitica_helper.stockrandomizer import StockRandomizer
 
@@ -35,23 +36,16 @@ def sharing_winners():
     otherwise e.g. the closing price can still change.
     """
     tool = PartyTool(HEADER)
-    challenge = tool.current_sharing_weekend()
-    participants = tool.challenge_participants(challenge["id"])
-    completers = sorted(tool.eligible_winners(challenge["id"], participants))
+    challenge_id = tool.current_sharing_weekend()["id"]
+    challenge = Challenge(HEADER, challenge_id)
 
-    click.echo("Eligible winners for challenge \"{}\" are:"
-               "".format(challenge["name"]))
-    for member in completers:
-        click.echo(member.displayname)
+    click.echo(challenge.completer_str())
     click.echo("")
 
     today = datetime.date.today()
     last_tuesday = today - datetime.timedelta(today.weekday() - 1)
-    click.echo("Using stock data from {}".format(last_tuesday))
 
-    rand = StockRandomizer("^AEX", last_tuesday)
-    winner_index = rand.pick_integer(0, len(completers))
-    click.echo("{} wins the challenge!".format(completers[winner_index]))
+    click.echo(challenge.winner_str(last_tuesday, "^AEX"))
 
 @cli.command()
 def party_members():
