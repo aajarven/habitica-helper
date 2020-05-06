@@ -58,6 +58,10 @@ class Challenge(object):
         """
         Return a string listing all people who completed the challenge
         """
+        if len(self.completers) == 0:
+            return ("Nobody completed all tasks for challenge \"{}\"."
+                    "".format(self.name))
+
         intro = ("The party members who completed all todo tasks for "
                  "challenge \"{}\" are:\n".format(self.name))
         completer_lines = ["- {}".format(member.displayname)
