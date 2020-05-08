@@ -101,3 +101,12 @@ class Challenge(object):
         winner = self.winner(date, stock)
         return ("Using stock data for {} from {} (seed {}).\n\n"
                 "{} wins the challenge!".format(date, stock, randomizer.seed, winner))
+
+    def clone(self):
+        """
+        Create a clone of this challenge and return its ID.
+        """
+        resp = requests.post("https://habitica.com/api/v3/challenges/{}/clone"
+                             "".format(self._id), headers=self.header)
+        resp.raise_for_status
+        return resp.json()["data"]["id"]
