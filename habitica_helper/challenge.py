@@ -54,6 +54,56 @@ class Challenge(object):
         """
         return self._full_data["name"]
 
+    @name.setter
+    def name(self, name):
+        """
+        Rename the challenge.
+
+        This method only affects the local copy of the challenge: the update()
+        method needs to be called to send the changes to Habitica.
+        """
+        self._full_data["name"] = name
+
+    @property
+    def summary(self):
+        """
+        The challenge summary.
+        """
+        return self._full_data["summary"]
+
+    @summary.setter
+    def summary(self, summary):
+        """
+        Change the summary of the challenge.
+
+        This method only affects the local copy of the challenge: the update()
+        method needs to be called to send the changes to Habitica.
+        """
+        self._full_data["summary"] = summary
+
+    @property
+    def description(self):
+        """
+        The challenge description.
+        """
+        return self._full_data["description"]
+
+    @description.setter
+    def description(self, description):
+        """
+        Change the challenge description.
+
+        This method only affects the local copy of the challenge: the update()
+        method needs to be called to send the changes to Habitica.
+        """
+        self._full_data["description"] = description
+
+    def update(self):
+        """
+        Update the name and leader of the challenge.
+        """  # TODO
+        raise NotImplemented("not implemented yet")
+
     def completer_str(self):
         """
         Return a string listing all people who completed the challenge
