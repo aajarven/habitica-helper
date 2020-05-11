@@ -100,9 +100,14 @@ class Challenge(object):
 
     def update(self):
         """
-        Update the name and leader of the challenge.
-        """  # TODO
-        raise NotImplemented("not implemented yet")
+        Update the name, description and summary of the challenge.
+        """
+        new_data = {"name": self.name,
+                    "description": self.description,
+                    "summary": self.summary}
+        requests.put(
+            "https://habitica.com/api/v3/challenges/{}".format(self.id),
+            data=new_data, headers=self.header)
 
     def completer_str(self):
         """
