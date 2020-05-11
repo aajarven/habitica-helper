@@ -265,3 +265,36 @@ class PartyTool(object):
                            u"".format(member.displayname))
             return (2, u"Birthday event for {} already up to date"
                        u"".format(member.displayname))
+
+
+class ChallengeTool(object):
+    """
+    A class that provides methods for creating challenges.
+    """
+
+    def __init__(self, header):
+        """
+        Create a challenge tool.
+
+        :header: Header to be used with the API
+        """
+        self._header = header
+
+    def create_challenge(self, data):
+        """
+        Create a new challenge with the given data.
+
+        Keys in the data dict, as presented in Habitica API documentation:
+            group: The id of the group to which the challenge belongs
+            name: The full name of the challenge
+            shortName: A shortened name for the challenge, to be used as a tag.
+            summary: A short summary advertising the main purpose of the
+                     challenge; maximum 250 characters; if not supplied,
+                     challenge.name will be used.
+            description: A detailed description of the challenge (optional)
+            prize: Number of gems offered as a prize to challenge winner
+                   (optional, default 0)
+
+        :returns: Challenge object representing the newly-created challenge
+        """
+        raise NotImplemented()
