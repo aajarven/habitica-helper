@@ -8,6 +8,7 @@ https://habitica.fandom.com/wiki/Guidance_for_Comrades#Rules_for_API_Calls
 from __future__ import print_function
 
 from datetime import date, datetime
+import requests
 
 from habitica_helper.google_calendar import GoogleCalendar
 from habitica_helper.member import Member
@@ -278,6 +279,8 @@ class ChallengeTool(object):
 
         :header: Header to be used with the API
         """
+
+        from habitica_helper.challenge import Challenge
         self._header = header
 
     def create_challenge(self, data):
@@ -297,4 +300,9 @@ class ChallengeTool(object):
 
         :returns: Challenge object representing the newly-created challenge
         """
-        raise NotImplemented()
+        resp = requests.post("https://habitica.com/api/v3/challenges",
+                headers=self._header, data=data)
+        print(resp.content)
+        resp.raise_for_status()
+        challenge_id = resp.json()["data"]["id"]
+        return Challenge(self._header, challenge_id)
