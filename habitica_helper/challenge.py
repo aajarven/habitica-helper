@@ -166,7 +166,7 @@ class Challenge(object):
         """
         resp = requests.post("https://habitica.com/api/v3/challenges/{}/clone"
                              "".format(self.id), headers=self._header)
-        resp.raise_for_status
+        resp.raise_for_status()
         return resp.json()["data"]["id"]
 
     def add_task(self, taskdata):
@@ -179,7 +179,7 @@ class Challenge(object):
         """
         resp = requests.post(
             "https://habitica.com/api/v3/tasks/challenge/{}".format(self.id),
-            data = taskdata, headers=self._header)
+            data=taskdata, headers=self._header)
         resp.raise_for_status()
 
 
