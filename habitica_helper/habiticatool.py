@@ -13,6 +13,7 @@ from habitica_helper.google_calendar import GoogleCalendar
 from habitica_helper.member import Member
 from habitica_helper import utils
 
+
 class PartyTool(object):
     """
     A class that provides methods for doing party-related things.

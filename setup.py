@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="habitica-helper", # Replace with your own username
-    version="0.0.5",
+    version="0.0.6",
     author="Anni Järvenpää",
     author_email="anni.jarvenpaa@gmail.com",
     description="A collection of tools for automating Habitica tasks",

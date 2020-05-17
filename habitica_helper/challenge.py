@@ -2,6 +2,8 @@
 A class for representing a Habitica challenge.
 """
 
+import requests
+
 from habitica_helper.habiticatool import PartyTool
 from habitica_helper.stockrandomizer import StockRandomizer
 from habitica_helper import utils
@@ -20,6 +22,7 @@ class Challenge(object):
         :challenge_id: The ID of the represented challenge
         """
         self.id = challenge_id
+        self._header = header
         self._full_data = utils.get_dict_from_api(
             header,
             "https://habitica.com/api/v3/challenges/{}".format(challenge_id))
@@ -53,6 +56,61 @@ class Challenge(object):
         The name of the challenge.
         """
         return self._full_data["name"]
+
+    @name.setter
+    def name(self, name):
+        """
+        Rename the challenge.
+
+        This method only affects the local copy of the challenge: the update()
+        method needs to be called to send the changes to Habitica.
+        """
+        self._full_data["name"] = name
+
+    @property
+    def summary(self):
+        """
+        The challenge summary.
+        """
+        return self._full_data["summary"]
+
+    @summary.setter
+    def summary(self, summary):
+        """
+        Change the summary of the challenge.
+
+        This method only affects the local copy of the challenge: the update()
+        method needs to be called to send the changes to Habitica.
+        """
+        self._full_data["summary"] = summary
+
+    @property
+    def description(self):
+        """
+        The challenge description.
+        """
+        return self._full_data["description"]
+
+    @description.setter
+    def description(self, description):
+        """
+        Change the challenge description.
+
+        This method only affects the local copy of the challenge: the update()
+        method needs to be called to send the changes to Habitica.
+        """
+        self._full_data["description"] = description
+
+    def update(self):
+        """
+        Update the name, description and summary of the challenge.
+        """
+        new_data = {"name": self.name,
+                    "description": self.description,
+                    "summary": self.summary}
+        requests.put(
+            "https://habitica.com/api/v3/challenges/{}".format(self.id),
+            data=new_data, headers=self.header)
 
     def completer_str(self):
         """
@@ -101,3 +159,63 @@ class Challenge(object):
         winner = self.winner(date, stock)
         return ("Using stock data for {} from {} (seed {}).\n\n"
                 "{} wins the challenge!".format(date, stock, randomizer.seed, winner))
+
+    def clone(self):
+        """
+        Create a clone of this challenge and return its ID.
+        """
+        resp = requests.post("https://habitica.com/api/v3/challenges/{}/clone"
+                             "".format(self.id), headers=self._header)
+        resp.raise_for_status()
+        return resp.json()["data"]["id"]
+
+    def add_task(self, taskdata):
+        """
+        Add a new task to this challenge.
+
+        :taskdata: A dict representing the new task, see
+                   https://habitica.com/apidoc/#api-Task-CreateChallengeTasks
+                   for keys and their values
+        """
+        resp = requests.post(
+            "https://habitica.com/api/v3/tasks/challenge/{}".format(self.id),
+            data=taskdata, headers=self._header)
+        resp.raise_for_status()
+
+
+class ChallengeTool(object):
+    """
+    A class that provides methods for creating challenges.
+    """
+
+    def __init__(self, header):
+        """
+        Create a challenge tool.
+
+        :header: Header to be used with the API
+        """
+        self._header = header
+
+    def create_challenge(self, data):
+        """
+        Create a new challenge with the given data.
+
+        Keys in the data dict, as presented in Habitica API documentation:
+            group: The id of the group to which the challenge belongs
+            name: The full name of the challenge
+            shortName: A shortened name for the challenge, to be used as a tag.
+            summary: A short summary advertising the main purpose of the
+                     challenge; maximum 250 characters; if not supplied,
+                     challenge.name will be used.
+            description: A detailed description of the challenge (optional)
+            prize: Number of gems offered as a prize to challenge winner
+                   (optional, default 0)
+
+        :returns: Challenge object representing the newly-created challenge
+        """
+        resp = requests.post("https://habitica.com/api/v3/challenges",
+                             headers=self._header, data=data)
+        resp.raise_for_status()
+        challenge_id = resp.json()["data"]["id"]
+
+        return Challenge(self._header, challenge_id)
