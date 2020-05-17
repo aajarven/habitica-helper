@@ -214,7 +214,7 @@ class ChallengeTool(object):
         :returns: Challenge object representing the newly-created challenge
         """
         resp = requests.post("https://habitica.com/api/v3/challenges",
-                headers=self._header, data=data)
+                             headers=self._header, data=data)
         resp.raise_for_status()
         challenge_id = resp.json()["data"]["id"]
 

@@ -8,11 +8,11 @@ https://habitica.fandom.com/wiki/Guidance_for_Comrades#Rules_for_API_Calls
 from __future__ import print_function
 
 from datetime import date, datetime
-import requests
 
 from habitica_helper.google_calendar import GoogleCalendar
 from habitica_helper.member import Member
 from habitica_helper import utils
+
 
 class PartyTool(object):
     """
