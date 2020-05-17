@@ -49,3 +49,20 @@ def test_get_next_weekday_over_newyear(weekday_str, correct_date):
     """
     next_weekday_date = utils.get_next_weekday(weekday_str)
     assert next_weekday_date == correct_date
+
+
+@pytest.mark.parametrize(
+    ["weekday_str", "from_date", "correct_date"],
+    [
+        ("mon", datetime.date(2020, 5, 11), datetime.date(2020, 5, 11)),
+    ]
+)
+def test_get_next_weekday_from(weekday_str, from_date, correct_date):
+    """
+    Test that giving the start date works
+    """
+    next_weekday_date = utils.get_next_weekday(
+            "mon",
+            from_date = datetime.date(2020, 5, 6)
+            )
+    assert next_weekday_date == datetime.date(2020, 5, 11)

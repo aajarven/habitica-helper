@@ -21,12 +21,14 @@ def get_dict_from_api(header, url):
     return response.json()["data"]
 
 
-def get_next_weekday(weekday):
+def get_next_weekday(weekday, from_date=None):
     """
-    Return a datetime object representing the next time it's the given day.
+    Return a date object representing the next time it's the given day.
 
     :weekday: Name of the weekday. Allowed values are e.g. "Tuesday",
               "tuesday", "Tue" and "tue".
+    :from_date: Date from which the "next" is viewed. Defaults to the current
+                date.
     :returns: date object
     """
     day_numbers = {
@@ -38,16 +40,17 @@ def get_next_weekday(weekday):
         "sat": 5,
         "sun": 6
         }
-    today = datetime.date.today()
     try:
         goal_day_number = day_numbers[weekday[:3].lower()]
     except KeyError:
         raise KeyError("Weekday {} not recognized".format(weekday))
-    today_day_number = today.weekday()
+    if not from_date:
+        from_date = datetime.date.today()
+    start_day_number = from_date.weekday()
 
-    next_day = (today +
-                datetime.timedelta((goal_day_number - today_day_number) % 7))
-    if next_day == today:
+    next_day = (from_date +
+                datetime.timedelta((goal_day_number - start_day_number) % 7))
+    if next_day == from_date:
         next_day = next_day + datetime.timedelta(7)
 
     return next_day
