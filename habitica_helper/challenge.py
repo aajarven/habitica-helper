@@ -11,8 +11,8 @@ from habitica_helper import utils
 
 class Challenge(object):
     """
-    TODO
-    """  # TODO
+    Data for an existing Habitica challenge.
+    """
 
     def __init__(self, header, challenge_id):
         """
@@ -21,7 +21,7 @@ class Challenge(object):
         :header: Header to use with API
         :challenge_id: The ID of the represented challenge
         """
-        self.id = challenge_id
+        self.id = challenge_id  # pylint: disable=invalid-name
         self._header = header
         self._full_data = utils.get_dict_from_api(
             header,
@@ -29,7 +29,7 @@ class Challenge(object):
         self._party_tool = PartyTool(header)
         self._participants = None
         self._completers = None
-    
+
     @property
     def participants(self):
         """
@@ -110,7 +110,7 @@ class Challenge(object):
                     "summary": self.summary}
         requests.put(
             "https://habitica.com/api/v3/challenges/{}".format(self.id),
-            data=new_data, headers=self.header)
+            data=new_data, headers=self._header)
 
     def completer_str(self):
         """
@@ -123,7 +123,7 @@ class Challenge(object):
         intro = ("The party members who completed all todo tasks for "
                  "challenge \"{}\" are:\n".format(self.name))
         completer_lines = ["- {}".format(member.displayname)
-                          for member in self.completers]
+                           for member in self.completers]
         return intro + "\n".join(completer_lines)
 
     def winner(self, date, stock):
@@ -158,7 +158,8 @@ class Challenge(object):
         randomizer = StockRandomizer(stock, date)
         winner = self.winner(date, stock)
         return ("Using stock data for {} from {} (seed {}).\n\n"
-                "{} wins the challenge!".format(date, stock, randomizer.seed, winner))
+                "{} wins the challenge!".format(date, stock, randomizer.seed,
+                                                winner))
 
     def clone(self):
         """
