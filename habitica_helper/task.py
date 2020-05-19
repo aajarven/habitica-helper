@@ -3,6 +3,7 @@ A representation of a Habitica task.
 """
 
 import datetime
+import requests
 
 
 class Task():
@@ -36,6 +37,29 @@ class Task():
         self.difficulty = task_data.get("difficulty", "easy")
         self.uppable = task_data.get("uppable", True)
         self.downable = task_data.get("downable", False)
+
+    def create_to_challenge(self, challenge_id, header):
+        """
+        Make the given challenge contain this task.
+
+        :challenge_id: The unique identifier of the challenge.
+        :header: Habitica API header
+        """
+        requests.post("https://habitica.com/api/v3/tasks/challenge/{}"
+                      "".format(challenge_id),
+                      headers=header,
+                      data=self._task_dict()
+                      ).raise_for_status()
+
+    def _task_dict(self):
+        """
+        Return this task in the standard Habitica API form.
+        """
+        datadict = {"text": self.text, "type": self.tasktype}
+        for key in ["notes", "date", "difficulty", "uppable", "downable"]:
+            if getattr(self, key) not in [None, ""]:
+                datadict[key] = getattr(self, key)
+        return datadict
 
     @property
     def text(self):
