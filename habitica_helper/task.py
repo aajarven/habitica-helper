@@ -202,7 +202,7 @@ class Task():
         elif difficulty.lower() in ["trivial", "easy", "medium", "hard"]:
             difficulties = {
                 "trivial": 0.1,
-                "normal": 1,
+                "easy": 1,
                 "medium": 1.5,
                 "hard": 2,
                 }
