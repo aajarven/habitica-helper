@@ -48,6 +48,26 @@ class Task():
         self.uppable = task_data.get("uppable", "true")
         self.downable = task_data.get("downable", "false")
 
+    def __eq__(self, obj):
+        """
+        Two tasks are the same task if they have the same type, text and notes.
+        """
+        if not isinstance(obj, Task):
+            return False
+        return (self.tasktype == obj.tasktype and
+                self.text == obj.text and
+                self.notes == obj.notes)
+
+    def __neq__(self, obj):
+        return not self.__eq__(obj)
+
+    def __hash__(self):
+        return hash((self.tasktype, self.text, self.notes))
+
+    def __str__(self):
+        return "\n".join(["{}: {}".format(key, val) for key, val in
+                          self._task_dict().items()])
+
     def create_to_challenge(self, challenge_id, header):
         """
         Make the given challenge contain this task.
