@@ -143,7 +143,7 @@ class PartyTool(object):
                 if task["type"] == "todo" and not task["completed"]:
                     eligible = False
             if eligible:
-                eligible_winners.append(Member(self._header, user_id))
+                eligible_winners.append(Member(user_id, header=self._header))
         return eligible_winners
 
     def party_members(self):
@@ -155,7 +155,8 @@ class PartyTool(object):
         member_ids = self._fetch_all_ids(
             "https://habitica.com/api/v3/groups/party/members",
             30)
-        return [Member(self._header, member_id) for member_id in member_ids]
+        return [Member(member_id, header=self._header) for member_id in
+                member_ids]
 
     def ensure_birthday(self, calendar_id, member):
         """
