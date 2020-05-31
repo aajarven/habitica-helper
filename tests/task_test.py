@@ -10,9 +10,9 @@ from habitica_helper.task import Task
 DEFAULTS = {
     "notes": "",
     "date": None,
-    "difficulty": "easy",
-    "uppable": True,
-    "downable": False,
+    "difficulty": 1,
+    "uppable": "true",
+    "downable": "false",
 }
 
 
@@ -57,8 +57,70 @@ def test_create_difficult_task():
         "tasktype": "todo",
         "notes": "Not much to say here. 🙊",
         "date": "2020-05-19",
-        "difficulty": "hard",
+        "difficulty": 2,
     }
     task = Task(taskdata)
     for key in taskdata:
         assert getattr(task, key) == taskdata[key]
+
+
+@pytest.mark.parametrize(
+    ["attr", "value"],
+    [
+        ("text", ""),
+        ("text", None),
+        ("text", ["task name"]),
+        ("notes", ["task notes"]),
+        ("date", "not a valid date"),
+        ("date", ["no not a", "valid date"]),
+        ("frequency", "every minute"),
+        ("uppable", "totally"),
+        ("downable", "hell yeah"),
+    ]
+)
+def test_illegal_values(attr, value):
+    """
+    Test that illegal values raise an exception
+    """
+    task_data = {"text": "test task",
+                 "tasktype": "todo",
+                 "notes": "some notes for this task",
+                 }
+    task_data[attr] = value
+    with pytest.raises(ValueError):
+        Task(task_data)
+
+
+def test_equals():
+    """
+    Test that tasks are compared on tasktype, text and notes for equality.
+    """
+    base_data = {"text": "test task",
+                 "tasktype": "todo",
+                 "notes": "some notes for this task",
+                 "difficulty": "easy"}
+    task = Task(base_data)
+
+    # task equals itself
+    assert task == task  # pylint: disable=comparison-with-itself
+
+    # task doesn't equal a dict with the same data
+    assert task != base_data
+
+    # tasks with equal properties equal
+    task2 = Task(base_data)
+    assert task == task2
+
+    # tasks with equal type, text and notes equal
+    task2.difficulty = "hard"
+    assert task == task2
+
+    # tasks with different type, text or notes aren't equal
+    for attr, value in [("text", "different text"),
+                        ("tasktype", "habit"),
+                        ("notes", "different notes"),
+                        ]:
+        different_data = dict(base_data)
+        different_data[attr] = value
+        task2 = Task(different_data)
+        assert task != task2

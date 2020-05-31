@@ -18,6 +18,13 @@ class Task():
         "difficulty": "priority",
     }
 
+    habitica_difficulties = {
+        "trivial": 0.1,
+        "easy": 1,
+        "medium": 1.5,
+        "hard": 2,
+        }
+
     def __init__(self, task_data):
         """
         Create a new task instance based on the given data.
@@ -197,16 +204,10 @@ class Task():
 
     @difficulty.setter
     def difficulty(self, difficulty):
-        if difficulty in [0.1, 1, 1.5, 2]:
+        if difficulty in self.habitica_difficulties.values():
             self._difficulty = difficulty
-        elif difficulty.lower() in ["trivial", "easy", "medium", "hard"]:
-            difficulties = {
-                "trivial": 0.1,
-                "easy": 1,
-                "medium": 1.5,
-                "hard": 2,
-                }
-            self._difficulty = difficulties[difficulty.lower()]
+        elif difficulty.lower() in self.habitica_difficulties:
+            self._difficulty = self.habitica_difficulties[difficulty.lower()]
         else:
             raise ValueError("Illegal task difficulty {} encountered. Allowed "
                              "values are 'trivial', 'easy', 'medium' and "
