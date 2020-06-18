@@ -54,3 +54,15 @@ def get_next_weekday(weekday, from_date=None):
         next_day = next_day + datetime.timedelta(7)
 
     return next_day
+
+
+def timestamp_to_datetime(timestamp_str):
+    """
+    Create a datetime object from a timestamp.
+
+    The timestamp must be a string in habitica format, e.g.
+    "2020-06-17T21:05:50.754Z".
+
+    :returns: corresponding datetime
+    """
+    return datetime.datetime.strptime(timestamp_str, "%Y-%m-%dT%H:%M:%S.%fZ")

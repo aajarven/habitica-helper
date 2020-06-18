@@ -19,8 +19,6 @@ class PartyTool(object):
     A class that provides methods for doing party-related things.
     """
 
-    _timestamp_format = "%Y-%m-%dT%H:%M:%S.%fZ"
-
     def __init__(self, header):
         """
         Initialize the class.
@@ -89,10 +87,10 @@ class PartyTool(object):
                 if not matching_challenge:
                     matching_challenge = challenge
                 else:
-                    old_created = datetime.strptime(matching_challenge["createdAt"],
-                                                    self._timestamp_format)
-                    new_created = datetime.strptime(challenge["createdAt"],
-                                                    self._timestamp_format)
+                    old_created = utils.timestamp_to_datetime(
+                        matching_challenge["createdAt"])
+                    new_created = utils.timestamp_to_datetime(
+                        challenge["createdAt"])
                     if new_created > old_created:
                         matching_challenge = challenge
 
