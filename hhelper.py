@@ -4,6 +4,8 @@ Scripts for automating actions related to Habitica.
 
 from __future__ import print_function
 import datetime
+import sys
+
 import click
 
 from conf import calendars
@@ -99,6 +101,39 @@ def participants(challenge_name):
     challenge = Challenge(HEADER, challenge_id)
 
     click.echo(challenge.completer_str())
+
+
+@cli.command()
+@click.argument("challenge_name")
+@click.option("--stock_date", "stock_timestamp", default=None,
+              help=("Date for which the stock data is used. Defaults to "
+                    "today. Must be given in format YYYYMMDD."))
+@click.option("--stock-name", default="^AEX",
+              help="Stock exhange symbol (defaults to '^AEX')")
+def pick_winner(challenge_name, stock_timestamp, stock_name):
+    """
+    Print participants and random-selected winner for a challenge.
+    """
+    tool = PartyTool(HEADER)
+    challenge_id = tool.newest_matching_challenge([challenge_name], [])["id"]
+    challenge = Challenge(HEADER, challenge_id)
+
+    click.echo(challenge.completer_str())
+    click.echo("")
+
+    if not stock_timestamp:
+        stock_date = datetime.date.today()
+    else:
+        try:
+            stock_date = datetime.datetime.strptime(stock_timestamp, "%Y%m%d")
+        except ValueError:
+            click.echo("Given stock_date does not seem to be a valid "
+                       "timestamp. It must be given in ISO-8601 format as "
+                       "`YYYYMMDD`.")
+            sys.exit(1)
+
+    click.echo(challenge.winner_str(stock_date, stock_name))
+
 
 if __name__ == "__main__":
     cli()
