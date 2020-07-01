@@ -122,7 +122,7 @@ class Challenge(object):
 
         intro = ("The party members who completed all todo tasks for "
                  "challenge \"{}\" are:\n".format(self.name))
-        completer_lines = ["- {}".format(member.displayname)
+        completer_lines = ["- {}".format(member)
                            for member in self.completers]
         return intro + "\n".join(completer_lines)
 
