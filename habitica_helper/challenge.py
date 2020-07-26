@@ -9,7 +9,7 @@ from habitica_helper.stockrandomizer import StockRandomizer
 from habitica_helper import utils
 
 
-class Challenge(object):
+class Challenge():
     """
     Data for an existing Habitica challenge.
     """
@@ -138,7 +138,7 @@ class Challenge(object):
         :returns: The Member who won the challenge
         """
         randomizer = StockRandomizer(stock, date)
-        winner_index = randomizer.pick_integer(0, len(self.completers))
+        winner_index = randomizer.pick_integer(0, len(self.completers) - 1)
         return self.completers[winner_index]
 
     def winner_str(self, date, stock):
