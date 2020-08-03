@@ -11,7 +11,7 @@ from habitica_helper import utils
 
 class Challenge():
     """
-    Data for an existing Habitica challenge.
+    Data and operations for an existing Habitica challenge.
     """
 
     def __init__(self, header, challenge_id):
@@ -126,7 +126,7 @@ class Challenge():
                            for member in self.completers]
         return intro + "\n".join(completer_lines)
 
-    def winner(self, date, stock):
+    def random_winner(self, date, stock):
         """
         Pick a winner for the challenge, based on the values of stock on a date
 
@@ -156,7 +156,7 @@ class Challenge():
         :returns: A string describing the process.
         """
         randomizer = StockRandomizer(stock, date)
-        winner = self.winner(date, stock)
+        winner = self.random_winner(date, stock)
         return ("Using stock data for {} from {} (seed {}).\n\n"
                 "{} wins the challenge!".format(date, stock, randomizer.seed,
                                                 winner))
