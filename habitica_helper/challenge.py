@@ -161,6 +161,18 @@ class Challenge():
                 "{} wins the challenge!".format(date, stock, randomizer.seed,
                                                 winner))
 
+    def award_winner(self, winner):
+        """
+        Award the given user as the winner for the challenge.
+
+        :winner: UID of the winner
+        """
+        response = requests.post(
+            "https://habitica.com/api/v3/challenges/{}/selectWinner/{}"
+            "".format(self.id, winner),
+            headers=self._header)
+        response.raise_for_status()
+
     def clone(self):
         """
         Create a clone of this challenge and return its ID.
