@@ -51,7 +51,7 @@ class PartyTool(object):
             if len(data) < pagelimit:
                 break
             else:
-                last_id = data[len(data) - 1]
+                last_id = data[len(data) - 1]["id"]
 
         return user_ids
 

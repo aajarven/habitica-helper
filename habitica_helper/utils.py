@@ -3,7 +3,8 @@ Miscellaneous small utility functions.
 """
 
 import datetime
-import requests
+
+from habitica_helper import habrequest
 
 
 def get_dict_from_api(header, url):
@@ -16,8 +17,7 @@ def get_dict_from_api(header, url):
 
     :raises: HTTPError if the request was bad
     """
-    response = requests.get(url, headers=header)
-    response.raise_for_status()
+    response = habrequest.get(url, headers=header)
     return response.json()["data"]
 
 

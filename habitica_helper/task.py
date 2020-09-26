@@ -3,7 +3,7 @@ A representation of a Habitica task.
 """
 
 import datetime
-import requests
+from habitica_helper import habrequest
 
 
 class Task():
@@ -82,11 +82,11 @@ class Task():
         :challenge_id: The unique identifier of the challenge.
         :header: Habitica API header
         """
-        requests.post("https://habitica.com/api/v3/tasks/challenge/{}"
-                      "".format(challenge_id),
-                      headers=header,
-                      data=self._task_dict()
-                      ).raise_for_status()
+        habrequest.post("https://habitica.com/api/v3/tasks/challenge/{}"
+                        "".format(challenge_id),
+                        headers=header,
+                        data=self._task_dict()
+                        )
 
     def _task_dict(self):
         """

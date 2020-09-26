@@ -2,10 +2,9 @@
 A class for representing a Habitica challenge.
 """
 
-import requests
-
 from habitica_helper.habiticatool import PartyTool
 from habitica_helper.stockrandomizer import StockRandomizer
+from habitica_helper import habrequest
 from habitica_helper import utils
 
 
@@ -108,7 +107,7 @@ class Challenge():
         new_data = {"name": self.name,
                     "description": self.description,
                     "summary": self.summary}
-        requests.put(
+        habrequest.put(
             "https://habitica.com/api/v3/challenges/{}".format(self.id),
             data=new_data, headers=self._header)
 
@@ -167,7 +166,7 @@ class Challenge():
 
         :winner: UID of the winner
         """
-        response = requests.post(
+        response = habrequest.post(
             "https://habitica.com/api/v3/challenges/{}/selectWinner/{}"
             "".format(self.id, winner),
             headers=self._header)
@@ -177,8 +176,9 @@ class Challenge():
         """
         Create a clone of this challenge and return its ID.
         """
-        resp = requests.post("https://habitica.com/api/v3/challenges/{}/clone"
-                             "".format(self.id), headers=self._header)
+        resp = habrequest.post(
+            "https://habitica.com/api/v3/challenges/{}/clone"
+            "".format(self.id), headers=self._header)
         resp.raise_for_status()
         return resp.json()["data"]["id"]
 
@@ -190,7 +190,7 @@ class Challenge():
                    https://habitica.com/apidoc/#api-Task-CreateChallengeTasks
                    for keys and their values
         """
-        resp = requests.post(
+        resp = habrequest.post(
             "https://habitica.com/api/v3/tasks/challenge/{}".format(self.id),
             data=taskdata, headers=self._header)
         resp.raise_for_status()
@@ -226,8 +226,8 @@ class ChallengeTool(object):
 
         :returns: Challenge object representing the newly-created challenge
         """
-        resp = requests.post("https://habitica.com/api/v3/challenges",
-                             headers=self._header, data=data)
+        resp = habrequest.post("https://habitica.com/api/v3/challenges",
+                               headers=self._header, data=data)
         resp.raise_for_status()
         challenge_id = resp.json()["data"]["id"]
 
