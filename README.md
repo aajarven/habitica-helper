@@ -1,8 +1,19 @@
-# Helper for Running Habitica Challenges
-This tool allows automating some tedious tasks that are required when running challenges and choosing their winners. Currently only picking the winner of weekly sharing challenge is supported, but more functionality might be added later.
+# Helper for Running Tasks in Habitica Parties
+This tool allows automating some tedious tasks that are required when running challenges and choosing their winners. The UI relies heavily on hard-coded values: the most valuable thing for others are likely the classes the UI uses. To be honest that's also what I'm using nowadays too, as instead of running the commands manually, I have a bot that does that (see https://github.com/aajarven/habot).
 
-## Installation
-This helper is written using Python, so you'll need to ensure it is installed to begin with (see https://www.python.org/). The Python version I'm using to pick the winners for out party is 2.7: most of python versions should be able to run the script, but the random number generator was fixed at version 2.3, so using an older (defective) version of Python can result in different winner being outputted.
+Currently the supported functionalities accessible from the command line UI include:
+ - picking the winner of a weekly challenge
+ - listing Habitica birthdays of party members and updating them to a google calendar
+
+For developer use, `habitica_helper` package contains following representations of Habitica concepts / functionalities:
+ - Habitica users
+ - Habitica tasks (habits, dailies, and todos)
+ - Picking random integers based on recent stock data
+ - Fetching party member data
+ - Representing and operating on existing Habitica challenges
+
+## Installation from Source
+This helper is written using Python, so you'll need to ensure it is installed to begin with (see https://www.python.org/). Any version beyond 3.6 should work.
 
 You'll also need `pip`, but that's likely installed along with python. If it isn't, see e.g. https://pip.pypa.io/en/stable/installing/.
 
@@ -26,10 +37,10 @@ python hhelper.py sharing-winners
 ```
 
 
-## Under the Hood
-Currently the helper is able to perform only one task: to determine the winner for the newest challenge with "Sharing Weekend" in its name. So, how does that work?
+## Picking a Challenge Winner: Under the Hood
+The helper is able to determine the winner for the newest challenge with a certain string in its name. So, how does that work?
 
-First, a list of users who are eligible for winning is created. This is done simply by listing all participants who have ticked all To-Do tasks for the challenge. This list is also printed so it's possible to confirm that all eligible users are indeed listed.
+First, the newest matching challenge is found, and a list of users who are eligible for winning it is created. This is done simply by listing all participants who have ticked all To-Do tasks for the challenge. This list is also printed so it's possible to confirm that all eligible users are indeed listed.
 
 Then, the winner is picked. This is the more complicated part, as the program makes sure that whoever runs the winner picking command for a specific week will get the same winner. This means that fairness of the selection can be verified by any party member.
 
@@ -58,16 +69,14 @@ Running the program can look e.g. like this:
 ```
 $ python hhelper.py sharing-winners
 Eligible winners for challenge "Sharing Weekend March 7−9" are:
-Blackbird Scraps
-asl
-Neala
-Corgi Potato
-Rose, The Stargazer
-Antonbury
+- Some Name (@SomeUser)
+- AnotherUser (@AnotherUser)
+- ThirdUser (@thirdy)
+- fourth (@last-boye)
 
-Using stock data from 2020-03-10
-Using seed 95957366
-Rose, The Stargazer wins the challenge!
+Using stock data from 2020-03-10 from ^AEX (seed 95957366).
+
+ThirdUser (@thirdy) wins the challenge!
 ```
 
-If you want to verify the result of the challenge at any time during the week following the challenge, just follow the installation instructions and run the command yourself. You should see the same winner picked!
+As the seed is set from a publicly available source of randomness, anyone can confirm the result.
