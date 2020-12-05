@@ -22,7 +22,7 @@ First, download the contents of this repository. Then navigate on command line t
 pip install -r requirements.txt
 ```
 
-Then you'll need to create a configuration file with your user ID and API key. The easiest way to do this is to copy the file `conf/secrets/habitica_credentials_template.py` to `conf/secrets_habitica_credentials.py`, and then use your favourite text editor to replace `yourUID` and `yourToken` with ones from your Habitica settings page. Never reveal that `secrets.py` file to anyone else.
+Then you'll need to create a configuration file with your user ID and API key. The easiest way to do this is to copy the file `conf/secrets/habitica_credentials_template.py` to `conf/secrets_habitica_credentials.py`, and then use your favourite text editor to replace `your-user-id-here` and `your-api-token-here` with ones from your Habitica settings page. Never reveal that `secrets.py` file to anyone else.
 
 Now you are ready to use the helper tool. These steps need to be done only once.
 
