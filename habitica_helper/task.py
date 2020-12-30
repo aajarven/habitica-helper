@@ -88,6 +88,17 @@ class Task():
                         data=self._task_dict()
                         )
 
+    def add_to_user(self, header):
+        """
+        Add the current task to personal tasks of the user.
+
+        :header: Habitica API header.
+        """
+        habrequest.post("https://habitica.com/api/v3/tasks/user",
+                        headers=header,
+                        data=self._task_dict()
+                        )
+
     def _task_dict(self):
         """
         Return this task in the standard Habitica API form.
