@@ -157,8 +157,8 @@ class Task():
         if tasktype is None:
             raise ValueError("Task type not provided.")
         if tasktype.lower() not in ["todo", "daily", "habit"]:
-            raise ValueError("Illegal task type {}. Supported values are "
-                             "'todo', 'daily' and 'habit'.")
+            raise ValueError("Illegal task type '{}'. Supported values are "
+                             "'todo', 'daily' and 'habit'.".format(tasktype))
         self._type = tasktype
 
     @property
