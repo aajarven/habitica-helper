@@ -36,7 +36,7 @@ class PartyTool(object):
         data = utils.get_dict_from_api(
                 self._header,
                 "https://habitica.com/api/v3/groups/party")
-        return data["summary"]
+        return data["description"]
 
     def update_party_description(self, new_description, user_id=None,
                                  api_token=None):
