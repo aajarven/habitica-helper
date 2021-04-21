@@ -7,9 +7,10 @@ https://habitica.fandom.com/wiki/Guidance_for_Comrades#Rules_for_API_Calls
 
 from __future__ import print_function
 
-from datetime import date, datetime
+from datetime import date
 
 from habitica_helper.google_calendar import GoogleCalendar
+from habitica_helper import habrequest
 from habitica_helper.member import Member
 from habitica_helper import utils
 
@@ -27,6 +28,34 @@ class PartyTool(object):
                  calls. This dict must contain them.
         """
         self._header = header
+
+    def party_description(self):
+        """
+        Return the description of the party
+        """
+        data = utils.get_dict_from_api(
+                self._header,
+                "https://habitica.com/api/v3/groups/party")
+        return data["description"]
+
+    def update_party_description(self, new_description, user_id=None,
+                                 api_token=None):
+        """
+        Set the given string as the party description.
+
+        Allows giving user ID and API token that differ from ones in the header
+        used for other actions. If they are not provided, the header given when
+        creating the object is used as is.
+        """
+        header = self._header.copy()
+        if user_id:
+            header["x-api-user"] = user_id
+            header["x-api-key"] = api_token
+
+        response = habrequest.put("https://habitica.com/api/v3/groups/party",
+                                  header,
+                                  data={"description": new_description})
+        response.raise_for_status()
 
     def _fetch_all_ids(self, url, pagelimit):
         """
@@ -213,6 +242,7 @@ class PartyTool(object):
                     u"".format(year_count,
                                member.displayname,
                                member.login_name))
+
         def _title(member):
             """
             Return title for birthday event.
