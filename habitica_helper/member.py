@@ -16,6 +16,7 @@ class Member():
     displayname         Nickname shown to others
     login_name          Player handle used for logging in
     habitica_birthday   Date of character creation
+    last_login          Date of the last login to Habitica
     """
 
     def __init__(self, user_id, header=None, profile_data=None):
@@ -31,7 +32,8 @@ class Member():
                         id: UID for the user (str)
                         displayname: Display name (str)
                         loginname: Login name (str)
-                        birthday: Habitica birthday (date)
+                        birthday: Habitica birthday (datetime)
+                        last_login: Last time the user logged in (datetime)
         """
         if header:
             profile_data = utils.get_dict_from_api(
@@ -43,11 +45,15 @@ class Member():
             self.habitica_birthday = datetime.strptime(
                 profile_data["auth"]["timestamps"]["created"],
                 "%Y-%m-%dT%H:%M:%S.%fZ")
+            self.last_login = datetime.strptime(
+                profile_data["auth"]["timestamps"]["loggedin"],
+                "%Y-%m-%dT%H:%M:%S.%fZ")
         elif profile_data:
             self.id = profile_data["id"]
             self.displayname = profile_data["displayname"]
             self.login_name = profile_data["loginname"]
             self.habitica_birthday = profile_data["birthday"]
+            self.last_login = profile_data["last_login"]
         else:
             raise AttributeError("Either header or profile_data must be "
                                  "provided for initializing a Member.")
