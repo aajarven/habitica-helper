@@ -3,6 +3,7 @@ A class for representing a Habitica challenge.
 """
 
 from habitica_helper.habiticatool import PartyTool
+from habitica_helper.basic_randomizer import BasicRandomizer
 from habitica_helper.stockrandomizer import StockRandomizer
 from habitica_helper import habrequest
 from habitica_helper import utils
@@ -125,9 +126,12 @@ class Challenge():
                            for member in self.completers]
         return intro + "\n".join(completer_lines)
 
-    def random_winner(self, date, stock):
+    def random_winner(self, date=None, stock=None):
         """
-        Pick a winner for the challenge, based on the values of stock on a date
+        Pick a winner for the challenge.
+
+        If date and stock are given, they are used when determining a challenge winner.
+        If not, "normal" RNG is used.
 
         :date: Date object representing the date from which to use the stock
                data.
@@ -136,7 +140,11 @@ class Challenge():
                 change.
         :returns: The Member who won the challenge
         """
-        randomizer = StockRandomizer(stock, date)
+        if date and stock:
+            randomizer = StockRandomizer(stock, date)
+        else:
+            randomizer = BasicRandomizer()
+
         winner_index = randomizer.pick_integer(0, len(self.completers) - 1)
         return self.completers[winner_index]
 
@@ -147,6 +155,9 @@ class Challenge():
         The returned string states the date, stock and seed used to pick the
         winner, together with the name of the winner.
 
+        If date and stock are given, they are used when determining a challenge winner.
+        If not, "normal" RNG is used.
+
         :date: Date object representing the date from which to use the stock
                data.
         :stock: Stock to use, e.g. "^AEX". Make sure that the stock has already
@@ -154,11 +165,18 @@ class Challenge():
                 change.
         :returns: A string describing the process.
         """
-        randomizer = StockRandomizer(stock, date)
+        if date and stock:
+            randomizer = StockRandomizer(stock, date)
+            intro = (
+                f"Using stock data for {date} from {stock} (seed "
+                f"{randomizer.seed}).\n\n"
+            )
+        else:
+            randomizer = BasicRandomizer()
+            intro = ""
+
         winner = self.random_winner(date, stock)
-        return ("Using stock data for {} from {} (seed {}).\n\n"
-                "{} wins the challenge!".format(date, stock, randomizer.seed,
-                                                winner))
+        return intro + "{} wins the challenge!".format(winner)
 
     def award_winner(self, winner):
         """
